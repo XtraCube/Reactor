@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using HarmonyLib;
 using UnhollowerBaseLib;
 using UnityEngine;
@@ -33,8 +36,8 @@ namespace Reactor.Debugger
                 __result = false;
             }
         }
-
-        [HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.CheckEndCriteria))]
+        
+        [HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.NBEBPPBCGLJ))]
         [HarmonyPriority(Priority.First)]
         public static class CheckEndCriteriaPatch
         {

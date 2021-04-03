@@ -76,7 +76,7 @@ namespace Reactor.Patches
                     return;
                 }
 
-                ackCallback = (Action) (() =>
+                ackCallback = (System.Action) (() =>
                 {
                     if (__instance.State == ConnectionState.Connected)
                         return;

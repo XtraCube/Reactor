@@ -53,7 +53,7 @@ namespace Reactor.Debugger
                     if (AmongUsClient.Instance.AmHost && ShipStatus.Instance && GUILayout.Button("Force game end", new Il2CppReferenceArray<GUILayoutOption>(0)))
                     {
                         ShipStatus.Instance.enabled = false;
-                        ShipStatus.RpcEndGame(GameOverReason.ImpostorDisconnect, false);
+                        ShipStatus.PBKIGLMJEDH(GameOverReason.ImpostorDisconnect, false);
                     }
 
                     if (TutorialManager.InstanceExists && GUILayout.Button("Spawn a dummy", new Il2CppReferenceArray<GUILayoutOption>(0)))

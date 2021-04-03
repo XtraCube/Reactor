@@ -106,7 +106,7 @@ namespace Reactor.Extensions
             Func = func;
         }
 
-        public Window(Rect rect, string title, Action func) : this(rect, title, id => func())
+        public Window(Rect rect, string title, System.Action func) : this(rect, title, id => func())
         {
         }
 
@@ -138,7 +138,7 @@ namespace Reactor.Extensions
             };
         }
 
-        public DragWindow(Rect rect, string title, Action func) : this(rect, title, id => func())
+        public DragWindow(Rect rect, string title, System.Action func) : this(rect, title, id => func())
         {
         }
     }
