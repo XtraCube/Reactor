@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UNITY_VERSION=2020.3.45f1
+UNITY_VERSION=2022.3.43f1
 
 if [[ ! -v UNITY_PATH ]]; then
     if command -v unityhub &>/dev/null; then
