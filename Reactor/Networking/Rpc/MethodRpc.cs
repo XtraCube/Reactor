@@ -164,6 +164,7 @@ public class MethodRpc : UnsafeCustomRpc
     /// </summary>
     private HandleDelegate Hook(MethodInfo method, ParameterInfo[] parameters, bool isStatic)
     {
+        _rpcLookup[method] = this;
         var dmd = new DynamicMethodDefinition(method);
         var trampoline = dmd.Generate();
         _detour = new Hook(method, GenerateSender());
