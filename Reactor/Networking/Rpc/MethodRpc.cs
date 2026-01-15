@@ -1,13 +1,14 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Runtime.InteropServices;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using Hazel;
 using InnerNet;
+using MonoMod;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
 using Reactor.Networking.Serialization;
@@ -23,6 +24,8 @@ public class MethodRpc : UnsafeCustomRpc
     private delegate object HandleDelegate(InnerNetObject innerNetObject, object[] args);
 
     private readonly HandleDelegate _handle;
+
+    private Hook _detour;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MethodRpc"/> class.
@@ -154,12 +157,17 @@ public class MethodRpc : UnsafeCustomRpc
 
     private static readonly MethodInfo _sendMethod = AccessTools.Method(typeof(MethodRpc), nameof(Send));
 
+    private static readonly Dictionary<MethodInfo, MethodRpc> _rpcLookup = [];
+
     /// <summary>
     /// Hooks the <paramref name="method"/> rpc with a dynamic method that sends it.
     /// </summary>
     private HandleDelegate Hook(MethodInfo method, ParameterInfo[] parameters, bool isStatic)
     {
-        var detour = new Detour(method, GenerateSender());
+        var dmd = new DynamicMethodDefinition(method);
+        var trampoline = dmd.Generate();
+        _detour = new Hook(method, GenerateSender());
+        return GenerateHandler(trampoline);
 
         // Used as target when hooking, sends the method rpc
         DynamicMethod GenerateSender()
@@ -178,34 +186,11 @@ public class MethodRpc : UnsafeCustomRpc
 
             var il = dynamicMethod.GetILGenerator();
 
-            // :yeefuckinhaw:
-            // Black magic from stackoverflow, they also said that you shouldn't do that ;)
-            // Resort to Dictionary<MethodInfo, MethodRpc> if this turns out to be unreliable
-            {
-                var handle = GCHandle.Alloc(this);
-                var ptr = GCHandle.ToIntPtr(handle);
-
-                if (IntPtr.Size == 4)
-                {
-                    il.Emit(OpCodes.Ldc_I4, ptr.ToInt32());
-                }
-                else
-                {
-                    il.Emit(OpCodes.Ldc_I8, ptr.ToInt64());
-                }
-
-                il.Emit(OpCodes.Conv_I);
-
-                // TODO Figure out why this always throws NullReferenceException on mono
-                // il.Emit(OpCodes.Ldobj, typeof(MethodRpc));
-
-                // Workaround for ^, speed seems to be the same
-                il.Emit(OpCodes.Call, AccessTools.Method(typeof(GCHandle), nameof(GCHandle.FromIntPtr)));
-                var temp = il.DeclareLocal(typeof(GCHandle));
-                il.Emit(OpCodes.Stloc, temp);
-                il.Emit(OpCodes.Ldloca, temp);
-                il.Emit(OpCodes.Call, AccessTools.PropertyGetter(typeof(GCHandle), nameof(GCHandle.Target)));
-            }
+            il.Emit(OpCodes.Ldsfld, AccessTools.Field(typeof(MethodRpc), nameof(_rpcLookup)));
+            il.Emit(OpCodes.Ldtoken, method);
+            il.Emit(OpCodes.Call, AccessTools.Method(typeof(MethodBase), nameof(MethodBase.GetMethodFromHandle), [typeof(RuntimeMethodHandle)]));
+            il.Emit(OpCodes.Castclass, typeof(MethodInfo));
+            il.Emit(OpCodes.Callvirt, AccessTools.Method(typeof(Dictionary<MethodInfo, MethodRpc>), "get_Item"));
 
             il.Emit(OpCodes.Ldarg_0);
 
@@ -244,7 +229,7 @@ public class MethodRpc : UnsafeCustomRpc
         }
 
         // Proxy translating object array to trampoline method args, used by MethodRpc to invoke original handling
-        HandleDelegate GenerateHandler(DynamicMethod trampoline)
+        HandleDelegate GenerateHandler(MethodInfo trampoline)
         {
             var dynamicMethod = new DynamicMethod($"Handler<{method.GetID(simple: true)}>", typeof(object), new[] { typeof(InnerNetObject), typeof(object[]) });
             dynamicMethod.DefineParameter(0, ParameterAttributes.None, "innerNetObject");
@@ -280,7 +265,5 @@ public class MethodRpc : UnsafeCustomRpc
 
             return dynamicMethod.CreateDelegate<HandleDelegate>();
         }
-
-        return GenerateHandler((DynamicMethod) detour.GenerateTrampoline());
     }
 }

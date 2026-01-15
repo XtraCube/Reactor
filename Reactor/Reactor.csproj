@@ -16,5 +16,9 @@
         <EmbeddedResource Include="Assets\**\*" Exclude="Assets\icon.png" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="MonoMod.RuntimeDetour" Version="25.3.3" />
+    </ItemGroup>
+
     <Import Project="../AmongUs.props" />
 </Project>
