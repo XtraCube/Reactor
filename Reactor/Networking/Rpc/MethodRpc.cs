@@ -18,9 +18,7 @@ namespace Reactor.Networking.Rpc;
 /// <summary>
 /// Provides a custom rpc for method rpc.
 /// </summary>
-#pragma warning disable CA1001
-public class MethodRpc : UnsafeCustomRpc
-#pragma warning restore CA1001
+public class MethodRpc : UnsafeCustomRpc, IDisposable
 {
     private delegate object HandleDelegate(InnerNetObject innerNetObject, object[] args);
 
@@ -299,5 +297,12 @@ public class MethodRpc : UnsafeCustomRpc
 
             return dynamicMethod.CreateDelegate<HandleDelegate>();
         }
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        _hook?.Dispose();
     }
 }
