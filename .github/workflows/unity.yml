@@ -23,7 +23,7 @@ jobs:
         uses: js6pak/setup-unity@master
         with:
           project-path: ./Reactor.Assets
-          unity-modules: windows-mono android
+          unity-modules: windows-mono android ios
 
       - name: Activate Unity
         env:

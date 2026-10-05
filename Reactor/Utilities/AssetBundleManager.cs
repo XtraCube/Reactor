@@ -47,6 +47,10 @@ public static class AssetBundleManager
         {
             operatingSystem = "android";
         }
+        else if (OperatingSystem.IsIOS())
+        {
+            operatingSystem = "ios";
+        }
         else
         {
             throw new PlatformNotSupportedException();

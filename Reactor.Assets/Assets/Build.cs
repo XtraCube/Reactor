@@ -12,6 +12,7 @@ internal static class Build
     {
         BuildTarget.StandaloneWindows,
         BuildTarget.Android,
+        BuildTarget.iOS
     };
 
     public static Compression Compression => Compression.LZMA;
@@ -76,6 +77,7 @@ internal static class Build
             BuildTarget.StandaloneWindows => includeArchitecture ? "win-x86" : "win",
             BuildTarget.StandaloneWindows64 => includeArchitecture ? "win-x64" : "win",
             BuildTarget.Android => "android",
+            BuildTarget.iOS => "ios",
             BuildTarget.StandaloneLinux64 => includeArchitecture ? "linux-x64" : "linux",
             _ => throw new ArgumentOutOfRangeException(nameof(target), target, null),
         };
