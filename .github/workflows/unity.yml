@@ -20,7 +20,7 @@ jobs:
           key: unity-${{ hashFiles('./Reactor.Assets/ProjectSettings/ProjectVersion.txt') }}
 
       - name: Setup Unity
-        uses: getsentry/setup-unity@v2
+        uses: getsentry/setup-unity@master
         with:
           unity-version: 2022.3.44f1
           unity-modules: windows-mono android ios
